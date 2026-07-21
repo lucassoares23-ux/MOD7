@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MOD7</title>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+<style>
+body{margin:0;font-family:Arial;background:#0f172a;color:#fff;display:flex;justify-content:center;align-items:center;min-height:100vh}
+.card{background:#1e293b;width:430px;max-width:95%;padding:28px;border-radius:18px;box-shadow:0 10px 35px rgba(0,0,0,.4)}
+h1{text-align:center;margin:0}
+.sub{text-align:center;color:#94a3b8;margin:8px 0 20px}
+.stats{display:flex;justify-content:space-around;margin:15px 0;font-size:18px}
+#today,#question,#feedback{text-align:center}
+.option{background:#334155;padding:12px;border-radius:10px;margin:10px 0;cursor:pointer;transition:.2s}
+.option:hover{background:#475569}
+.correct{background:#166534!important}
+.wrong{background:#991b1b!important}
+</style>
+</head>
+<body>
+<div class="card">
+<h1>📅 MOD7</h1>
+<div class="sub">Domine o calendário</div>
+<div class="stats">
+<div>🔥 <span id="streak">0</span></div>
+<div>⭐ <span id="score">0</span></div>
+<div>🏆 <span id="record">0</span></div>
+</div>
+<div id="today"></div>
+<hr>
+<div id="question"></div>
+<div id="options"></div>
+<div id="feedback"></div>
+</div>
+<script>
+const dias=["Domingo","Segunda-feira","Terça-feira","Quarta-feira","Quinta-feira","Sexta-feira","Sábado"];
+let streak=0,score=0;
+let record=Number(localStorage.getItem("mod7_record")||0);
+document.getElementById("record").textContent=record;
+let resposta=0;
+
+function atualizarTopo(){
+ const h=new Date();
+ document.getElementById("today").innerHTML=`<b>Hoje</b><br>${h.toLocaleDateString("pt-BR")}<br>${dias[h.getDay()]}`;
+ document.getElementById("streak").textContent=streak;
+ document.getElementById("score").textContent=score;
+ document.getElementById("record").textContent=record;
+}
+function novaPergunta(){
+ atualizarTopo();
+ document.getElementById("feedback").innerHTML="";
+ const hoje=new Date();
+ const add=Math.floor(Math.random()*365)+1;
+ const alvo=new Date(hoje);
+ alvo.setDate(alvo.getDate()+add);
+ resposta=alvo.getDay();
+ document.getElementById("question").innerHTML=`<h2>Daqui a ${add} dias</h2><p>Que dia da semana será?</p>`;
+ let html="";
+ dias.forEach((d,i)=>html+=`<div class='option' onclick='responder(${i},this)'>${d}</div>`);
+ document.getElementById("options").innerHTML=html;
+}
+function responder(i,el){
+ document.querySelectorAll(".option").forEach(o=>o.style.pointerEvents="none");
+ if(i===resposta){
+   streak++;score++;
+   if(streak>record){record=streak;localStorage.setItem("mod7_record",record);}
+   el.classList.add("correct");
+   document.getElementById("feedback").innerHTML="<span style='color:#4ade80'>✔ Correto!</span>";
+   confetti({particleCount:180,spread:90});
+ }else{
+   streak=0;
+   el.classList.add("wrong");
+   document.getElementById("feedback").innerHTML=`<span style='color:#f87171'>❌ Errado! Era ${dias[resposta]}</span>`;
+   document.querySelectorAll(".option")[resposta].classList.add("correct");
+ }
+ atualizarTopo();
+ setTimeout(novaPergunta,1200);
+}
+novaPergunta();
+</script>
+</body>
+</html>
